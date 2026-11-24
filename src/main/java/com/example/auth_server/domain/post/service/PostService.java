@@ -25,9 +25,9 @@ public class PostService {
     private final LikeRepository likeRepository;
 
     @Transactional
-    public PostResponse createPost(CreatePostRequest dto) {
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("user not found: " + dto.getUserId()));
+    public PostResponse createPost(Long userId, CreatePostRequest dto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("user not found: " + userId));
 
         Post post = Post.builder()
                 .title(dto.getTitle())
@@ -54,9 +54,13 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponse updatePost(Long postId, UpdatePostRequest dto) {
+    public PostResponse updatePost(Long userId, Long postId, UpdatePostRequest dto) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("post not found: " + postId));
+
+        if (!post.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("Wrong access");
+        }
 
         post.update(dto.getTitle(), dto.getContent());
 
@@ -64,9 +68,12 @@ public class PostService {
     }
 
     @Transactional
-    public void deletePost(Long postId) {
-        if (!postRepository.existsById(postId)) {
-            throw new IllegalArgumentException("post not found: " + postId);
+    public void deletePost(Long userId, Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("post not found: " + postId));
+
+        if (!post.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("Wrong access");
         }
 
         commentRepository.deleteByPostId(postId);

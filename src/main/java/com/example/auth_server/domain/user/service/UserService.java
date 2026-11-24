@@ -1,6 +1,7 @@
 package com.example.auth_server.domain.user.service;
 
-import com.example.auth_server.domain.user.dto.CreateUserRequest;
+import com.example.auth_server.common.jwt.JwtProvider;
+import com.example.auth_server.domain.user.dto.SignupRequest;
 import com.example.auth_server.domain.user.dto.LoginRequest;
 import com.example.auth_server.domain.user.entity.User;
 import com.example.auth_server.domain.user.repository.UserRepository;
@@ -15,9 +16,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
 
     @Transactional
-    public void createUser(CreateUserRequest dto) {
+    public void signup(SignupRequest dto) {
+        if (userRepository.existsByEmail(dto.getEmail()))
+            throw new IllegalArgumentException("user already exists");
 
         String encoded = passwordEncoder.encode(dto.getPassword());
         User user = User.builder()
@@ -30,14 +34,13 @@ public class UserService {
     }
 
     @Transactional
-    public Long login(LoginRequest dto) {
+    public String login(LoginRequest dto) {
         User user = userRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("user not found: " + dto.getEmail()));
-
+                .orElseThrow(() -> new IllegalArgumentException("invalid credentials"));
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new RuntimeException("passwords do not match");
+            throw new IllegalArgumentException("invalid credentials");
         }
 
-        return user.getId();
+        return jwtProvider.generateToken(user.getId());
     }
 }

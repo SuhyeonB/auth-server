@@ -9,7 +9,5 @@ import lombok.NoArgsConstructor;
 public class CreateCommentRequest {
 
     @NotNull
-    private Long userId;
-    @NotNull
     private String content;
 }

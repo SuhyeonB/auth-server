@@ -7,6 +7,7 @@ import com.example.auth_server.domain.comment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,10 +21,11 @@ public class CommentController {
 
     @PostMapping("/{postId}")
     public ResponseEntity<CommentResponse> createComment (
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long postId,
             @Valid @RequestBody CreateCommentRequest dto
-            ) {
-        return ResponseEntity.ok(commentService.createComment(postId, dto));
+    ) {
+        return ResponseEntity.ok(commentService.createComment(userId, postId, dto));
     }
 
     @GetMapping("/{postId}")
@@ -33,15 +35,19 @@ public class CommentController {
 
     @PutMapping("/{commentId}")
     public ResponseEntity<CommentResponse> updateComment (
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long commentId,
             @RequestBody UpdateCommentRequest dto
-            ) {
-        return ResponseEntity.ok(commentService.updateComment(commentId, dto));
+    ) {
+        return ResponseEntity.ok(commentService.updateComment(userId, commentId, dto));
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
-        commentService.deleteComment(commentId);
+    public ResponseEntity<Void> deleteComment(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long commentId
+    ) {
+        commentService.deleteComment(userId, commentId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -3,6 +3,7 @@ package com.example.auth_server.domain.like.controller;
 import com.example.auth_server.domain.like.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,7 +16,7 @@ public class LikeController {
     @PostMapping("/like/{postId}")
     public ResponseEntity<Void> likePost(
             @PathVariable Long postId,
-            @RequestParam Long userId
+            @AuthenticationPrincipal Long userId
     ) {
         likeService.likePost(postId, userId);
         return ResponseEntity.ok().build();
@@ -24,7 +25,7 @@ public class LikeController {
     @PostMapping("/unlike/{postId}")
     public ResponseEntity<Void> unlikePost(
             @PathVariable Long postId,
-            @RequestParam Long userId
+            @AuthenticationPrincipal Long userId
     ) {
         likeService.unlikePost(postId, userId);
         return ResponseEntity.ok().build();

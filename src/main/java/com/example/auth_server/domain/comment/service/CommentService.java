@@ -24,11 +24,11 @@ public class CommentService {
     private final CommentRepository commentRepository;
 
     @Transactional
-    public CommentResponse createComment(Long postId, CreateCommentRequest dto) {
+    public CommentResponse createComment(Long userId, Long postId, CreateCommentRequest dto) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("post not found: " + postId));
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("user not found: " + dto.getUserId()));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("user not found: " + userId));
 
         Comment comment = Comment.builder()
                 .post(post)
@@ -50,10 +50,12 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponse updateComment(Long commentId, UpdateCommentRequest dto) {
-
+    public CommentResponse updateComment(Long userId, Long commentId, UpdateCommentRequest dto) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("comment not found: " + commentId));
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("Wrong access");
+        }
 
         comment.update(dto.getContent());
 
@@ -61,7 +63,13 @@ public class CommentService {
     }
 
     @Transactional
-    public void deleteComment(Long commentId) {
+    public void deleteComment(Long userId, Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("comment not found: " + commentId));
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("Wrong access");
+        }
+
         commentRepository.deleteById(commentId);
     }
 }
