@@ -1,5 +1,6 @@
 package com.example.auth_server.common.jwt;
 
+import com.example.auth_server.domain.user.entity.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -31,9 +32,10 @@ public class JwtProvider {
     }
 
     // generate token
-    public String generateToken(Long userId) {
+    public String generateToken(Long userId, Role role) {
         return Jwts.builder()
                 .subject(String.valueOf(userId))
+                .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + TOKEN_EXP))
                 .signWith(key)
@@ -64,5 +66,9 @@ public class JwtProvider {
 
     public Long getUserId(String token) {
         return Long.valueOf(extractToken(token).getSubject());
+    }
+
+    public String getRole(String token) {
+        return String.valueOf(extractToken(token).get("role", String.class));
     }
 }

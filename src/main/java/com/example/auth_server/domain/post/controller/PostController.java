@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,7 +42,6 @@ public class PostController {
         return ResponseEntity.ok(postService.findPosts(pageable));
     }
 
-
     @PutMapping("/{postId}")
     public ResponseEntity<PostResponse> updatePost(
             @AuthenticationPrincipal Long userId,
@@ -57,6 +57,13 @@ public class PostController {
             @PathVariable Long postId
     ) {
         postService.deletePost(userId, postId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{postId}/force")
+    public ResponseEntity<Void> forceDelete (@PathVariable Long postId) {
+        postService.forceDelete(postId);
         return ResponseEntity.noContent().build();
     }
 }

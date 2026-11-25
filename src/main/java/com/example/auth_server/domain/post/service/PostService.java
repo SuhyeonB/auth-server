@@ -80,4 +80,15 @@ public class PostService {
         likeRepository.deleteByPostId(postId);
         postRepository.deleteById(postId);
     }
+
+    @Transactional
+    public void forceDelete(Long postId) {
+        if (!postRepository.existsById(postId)) {
+            return;
+        }
+
+        commentRepository.deleteByPostId(postId);
+        likeRepository.deleteByPostId(postId);
+        postRepository.deleteById(postId);
+    }
 }

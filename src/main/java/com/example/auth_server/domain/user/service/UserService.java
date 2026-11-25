@@ -41,6 +41,6 @@ public class UserService {
             throw new IllegalArgumentException("invalid credentials");
         }
 
-        return jwtProvider.generateToken(user.getId());
+        return jwtProvider.generateToken(user.getId(), user.getRole());
     }
 }

@@ -1,5 +1,6 @@
 package com.example.auth_server.common.jwt;
 
+import com.example.auth_server.domain.user.entity.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ class JwtProviderTest {
     @Test
     @DisplayName("발급 직후 토큰은 검증에 성공하고 sub에 userId가 담긴다")
     public void validToken_returnsTrue() {
-        String token = jwtProvider.generateToken(1L);
+        String token = jwtProvider.generateToken(1L, Role.USER);
 
         assertTrue(jwtProvider.validateToken(token));
     }
@@ -39,7 +40,7 @@ class JwtProviderTest {
     @Test
     @DisplayName("payload를 변조한 토큰은 검증에 실패한다")
     public void tamperedToken_returnsFalse() {
-        String token = jwtProvider.generateToken(1L);
+        String token = jwtProvider.generateToken(1L, Role.USER);
 
         String tamperedPayload = Base64.getUrlDecoder().decode(token.split("\\.")[1]).toString().replace("1L", "2L");
         String tamperedToken = String.join(".", token.split("\\.")[0], tamperedPayload, token.split("\\.")[2]);
@@ -52,7 +53,7 @@ class JwtProviderTest {
     public void expiredToken_returnsFalse() {
         jwtProvider = createProvider("test-secret-key-must-be-at-least-32-bytes!!", -1000L);
 
-        String expiredToken = jwtProvider.generateToken(1L);
+        String expiredToken = jwtProvider.generateToken(1L, Role.USER);
 
         assertFalse(jwtProvider.validateToken(expiredToken));
     }
@@ -62,7 +63,7 @@ class JwtProviderTest {
     public void tokenSignedWithDifferentKey_returnsFalse() {
         JwtProvider otherJwtProvider = createProvider("this-secret-key-is-not-what-you-expect==", 1_800_000L);
 
-        String token = otherJwtProvider.generateToken(1L);
+        String token = otherJwtProvider.generateToken(1L, Role.USER);
 
         assertFalse(jwtProvider.validateToken(token));
     }
